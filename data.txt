@@ -1,0 +1,85 @@
+et up a container named postres-user1 with appropriate environment variables
+and ensure it's in detached mode.
+docker run -dit \
+  --name postres-user1 \
+  -e POSTGRES_USER=user1 \
+  -e POSTGRES_PASSWORD=secret123 \
+  -e POSTGRES_DB=user1_db \
+  postgres:latest
+docker ps
+
+C. Connect to the PostgreSQL instance within the container postres-user1 using the
+command psql -U postgres.
+
+docker rm -f postres-user1
+
+docker run -dit \
+  --name postres-user1 \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=secret123 \
+  -e POSTGRES_DB=postgres \
+  postgres:latest
+
+docker exec -it postres-user1 psql -U postgres
+-q
+
+D. Create a new database within the PostgreSQL instance.
+CREATE DATABASE new_db;
+\l
+\q
+
+E. Stop the container named postres-user1.
+docker stop postres-user1
+
+F. Delete the container named postres-user1.
+docker rm postres-user1
+docker ps -a
+
+
+Q3)3) Construct a custom Dockerfile to containerize a Node.js HTTP server, build an image
+from it, and then initiate a container.
+mkdir node-http-server
+cd node-http-server
+vi server.js
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello from Node.js in Docker!\n');
+});
+
+const PORT = 3000;
+server.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+});
+
+
+npm init -y
+npm install
+vi Dockerfile
+# Base image
+FROM node:18
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy the rest of the app
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start the server
+CMD ["node", "server.js"]
+
+
+
+docker build -t node-http-server .
+docker run -d -p 3000:3000 --name node-server node-http-server
+http://localhost:3000
+
